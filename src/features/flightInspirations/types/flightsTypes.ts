@@ -6,6 +6,8 @@ export interface Column {
 export interface GetFlightsParams {
   origin: string;
   departureDate?: string;
+  oneWay?: string;
+  nonStop?: string;
 }
 
 export interface price {

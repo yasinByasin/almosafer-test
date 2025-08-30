@@ -22,21 +22,24 @@ export const useFlights = () => {
   const [flightsData, setFlightsData] = useState<FlightData[]>([]);
   const [params, setParams] = useState<GetFlightsParams>({
     origin: 'MAD',
-    departureDate: '2020-10-23',
+    departureDate: new Date().toISOString().split('T')[0].replace(/-/g, '-'),
   });
+  const [isLoading, setIsLoading] = useState(false);
 
   const {
-    isLoading,
     error,
     refetch: fetchFlights,
   } = useQuery({
     queryKey: flightsKeys.settings(),
     queryFn: async () => {
       let accessToken = await getCurrentToken!();
+      setIsLoading(true);
 
+      params.departureDate = params.departureDate?.toString().split('T')[0].replace(/-/g, '-');
       try {
         const flightsData = await flightsApi.getFlights(accessToken, params);
         setFlightsData(flightsData.data);
+        setIsLoading(false);
         return flightsData;
       } catch (error: any) {
         if (error.response?.status === 401) {
@@ -46,14 +49,20 @@ export const useFlights = () => {
 
             const flightsData = await flightsApi.getFlights(accessToken, params);
             setFlightsData(flightsData.data);
+            setIsLoading(false);
             return flightsData;
           } catch (retryError) {
+            setIsLoading(false);
             console.error('Retry after token refresh failed:', retryError);
             throw retryError;
           }
+        } else if (error.response?.status === 404) {
+          setIsLoading(false);
+          throw new Error('No flights found');
         }
 
-        throw error;
+        setIsLoading(false);
+        throw new Error('Error fetching flights');
       }
     },
     enabled: false,

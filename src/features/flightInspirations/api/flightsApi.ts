@@ -14,22 +14,22 @@ export class FlightsApi implements FlightsApiInterface {
 
   async getFlights(accessToken: string, params?: GetFlightsParams): Promise<Flights> {
     try {
-      const paramsApi = {
+      const paramsApi: GetFlightsParams = {
         origin: params?.origin || "MAD",
-        departureDate: params?.departureDate || "2020-10-23",
         oneWay: "false",
         nonStop: "false",
       }
-      // The API should implement pagination in order to prevent performance issues
-      const queryParams = new URLSearchParams(paramsApi);
-      const url = `${this.apiBaseUrl}${this.endpoints.getFlights}?${queryParams}`;
+      if (params?.departureDate) {
+        paramsApi.departureDate = params.departureDate;
+      }
+      const url = `${this.apiBaseUrl}${this.endpoints.getFlights}`;
       const headers: Record<string, string> = {
         'Authorization': `Bearer ${accessToken}`,
         'Content-Type': 'application/json',
       };
 
       const response = await axios.get(url, {
-        params,
+        params: paramsApi,
         headers
       });
       return response.data;

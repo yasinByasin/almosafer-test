@@ -24,17 +24,6 @@ export const FlightsPage: React.FC = () => {
     fetchFlights();
   }, [fetchFlights]);
 
-  if (error) {
-    return <h3 style={{
-      display: "flex", 
-      justifyContent: "center", 
-      alignItems: "center", 
-      height: "100vh",
-      width: "100%",
-      color: "red"
-    }}>
-      Oh no! {error.message}</h3>;
-  }
 
   const inputField = (value: string, rowIndex: number, columnKey: string) => {
     return <input
@@ -120,30 +109,45 @@ export const FlightsPage: React.FC = () => {
     fetchFlights();
   }
 
+  const renderHeader = () => {
+    return <>
+      <div style={{ display: "flex", gap: "10px", justifyContent: "end" }}>
+        <AnimationButton onClick={() => setShowFilterForm(!showFilterForm)}>{showFilterForm ? "Hide Filter Form" : "Show Filter Form"}</AnimationButton >
+        <AnimationButton onClick={saveChanges}>Save</AnimationButton>
+      </div>
+      <FilterForm onSearch={handleSearch} isVisible={showFilterForm} />
+    </>
+  }
+  const renderPage = () => {
+    if (isLoading) {
+      return <h1>Loading flights...</h1>
+    }
+    if (error) {
+      return <h3 style={{
+        display: "flex",
+        justifyContent: "center",
+        alignItems: "center",
+        // height: "100vh",
+        width: "100%",
+        color: "lightred"
+      }}>Oh no! {error.message}</h3>
+    }
+    return <FlightsTable
+      data={flightsData}
+      columns={columns}
+      saveChanges={saveChanges}
+      updateCell={updateCell}
+      editedCells={editedCells}
+    />
+  }
   return (
-    <>
-      {isLoading ? (
-        <h1>Loading flights...</h1>
-      ) : (
-        <div>
-          {flightsData && (
-            <div style={{ marginTop: "20px" }}>
-              <div style={{ display: "flex", gap: "10px", justifyContent: "end" }}>
-                <AnimationButton onClick={() => setShowFilterForm(!showFilterForm)}>{showFilterForm ? "Hide Filter Form" : "Show Filter Form"}</AnimationButton >
-                <AnimationButton onClick={saveChanges}>Save</AnimationButton>
-              </div>
-              <FilterForm onSearch={handleSearch} isVisible={showFilterForm} />
-              <FlightsTable
-                data={flightsData}
-                columns={columns}
-                saveChanges={saveChanges}
-                updateCell={updateCell}
-                editedCells={editedCells}
-              />
-            </div>
-          )}
+    <div>
+      {flightsData && (
+        <div style={{ marginTop: "20px" }}>
+          {renderHeader()}
+          {renderPage()}
         </div>
       )}
-    </>
+    </div>
   );
 };
